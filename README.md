@@ -38,7 +38,7 @@ import (
 
 func main() {
   r := gin.Default()
-  r.Use(gzip.Gzip(gzip.DefaultCompression))
+  r.Use(gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedExtensions([]string{".pdf", ".mp4"}), gzip.WithMinLength(4000)))
   r.GET("/ping", func(c *gin.Context) {
     c.String(http.StatusOK, "pong "+fmt.Sprint(time.Now().Unix()))
   })
