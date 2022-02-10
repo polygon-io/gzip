@@ -47,17 +47,30 @@ func (g *gzipHandler) Handle(c *gin.Context) {
 
 	gz := g.gzPool.Get().(*gzip.Writer)
 	defer g.gzPool.Put(gz)
-	defer gz.Reset(ioutil.Discard)
 	gz.Reset(c.Writer)
 
-	c.Header("Content-Encoding", "gzip")
-	c.Header("Vary", "Accept-Encoding")
-	c.Writer = &gzipWriter{c.Writer, gz}
-	defer func() {
-		gz.Close()
-		c.Header("Content-Length", fmt.Sprint(c.Writer.Size()))
-	}()
+	gzWriter := &gzipWriter{
+		ResponseWriter: c.Writer,
+		writer:         gz,
+		minLength:      g.Options.MinLength,
+	}
+	c.Writer = gzWriter
+
 	c.Next()
+
+	if gzWriter.compress {
+		// Just close and flush the gz writer
+		gz.Close()
+	} else {
+		// Discard the gz writer
+		gz.Reset(ioutil.Discard)
+
+		// Write the buffered data into the original writer
+		gzWriter.ResponseWriter.Write(gzWriter.buffer.Bytes())
+	}
+
+	// Set the content length if it's still possible
+	c.Header("Content-Length", fmt.Sprint(c.Writer.Size()))
 }
 
 func (g *gzipHandler) shouldCompress(req *http.Request) bool {
