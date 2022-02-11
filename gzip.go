@@ -32,19 +32,19 @@ func (g *gzipWriter) WriteString(s string) (int, error) {
 }
 
 func (g *gzipWriter) Write(data []byte) (w int, err error) {
-
-	if !g.compress {
-		w, err = g.writer.Write(data)
-		return
-	}
-
 	// If the first chunk of data is already bigger than the minimum size,
 	// set the headers and write directly to the gz writer
-	if len(data) >= g.minLength {
+	if g.compress && len(data) >= g.minLength {
 		g.ResponseWriter.Header().Set("Content-Encoding", "gzip")
 		g.ResponseWriter.Header().Set("Vary", "Accept-Encoding")
 
 		g.compress = true
+	}
+
+	if g.compress {
+		// Write the data into the gz writer
+		w, err = g.writer.Write(data)
+		return
 	}
 
 	// Write the data into a buffer
