@@ -282,6 +282,7 @@ func TestGzipMinLengthBuffer(t *testing.T) {
 }
 
 func TestGzipMinLengthNoBuffer(t *testing.T) {
+	// nolint:noctx // Doesn't matter in a test.
 	req, _ := http.NewRequest("GET", "/", nil)
 	req.Header.Add("Accept-Encoding", "gzip")
 

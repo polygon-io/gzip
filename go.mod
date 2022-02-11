@@ -1,6 +1,7 @@
 module github.com/gin-contrib/gzip
 
 go 1.17
+
 require (
 	github.com/gin-gonic/gin v1.7.4
 	github.com/stretchr/testify v1.7.0
@@ -25,4 +26,3 @@ require (
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
-

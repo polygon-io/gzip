@@ -60,13 +60,17 @@ func (g *gzipHandler) Handle(c *gin.Context) {
 
 	if gzWriter.compress {
 		// Just close and flush the gz writer
-		gz.Close()
+		if err := gz.Close(); err != nil {
+			_ = c.Error(fmt.Errorf("closing and flushing gzip writer: %w", err))
+		}
 	} else {
-		// Discard the gz writer
+		// Reset to the original writer
 		gz.Reset(ioutil.Discard)
 
 		// Write the buffered data into the original writer
-		gzWriter.ResponseWriter.Write(gzWriter.buffer.Bytes())
+		if _, err := gzWriter.ResponseWriter.Write(gzWriter.buffer.Bytes()); err != nil {
+			_ = c.Error(fmt.Errorf("closing and flushing gzip writer: %w", err))
+		}
 	}
 
 	// Set the content length if it's still possible

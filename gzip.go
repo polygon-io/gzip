@@ -31,10 +31,10 @@ func (g *gzipWriter) WriteString(s string) (int, error) {
 	return g.writer.Write([]byte(s))
 }
 
-func (g *gzipWriter) Write(data []byte) (w int, err error) {
+func (g *gzipWriter) Write(data []byte) (int, error) {
 	// If the first chunk of data is already bigger than the minimum size,
 	// set the headers and write directly to the gz writer
-	if g.compress && len(data) >= g.minLength {
+	if !g.compress && len(data) >= g.minLength {
 		g.ResponseWriter.Header().Set("Content-Encoding", "gzip")
 		g.ResponseWriter.Header().Set("Vary", "Accept-Encoding")
 
@@ -43,14 +43,13 @@ func (g *gzipWriter) Write(data []byte) (w int, err error) {
 
 	if g.compress {
 		// Write the data into the gz writer
-		w, err = g.writer.Write(data)
-		return
+		return g.writer.Write(data)
 	}
 
 	// Write the data into a buffer
-	w, err = g.buffer.Write(data)
+	w, err := g.buffer.Write(data)
 	if err != nil {
-		return
+		return w, err
 	}
 
 	// If the buffer is bigger than the minimum size, set the headers and write
@@ -59,12 +58,15 @@ func (g *gzipWriter) Write(data []byte) (w int, err error) {
 		g.ResponseWriter.Header().Set("Content-Encoding", "gzip")
 		g.ResponseWriter.Header().Set("Vary", "Accept-Encoding")
 
-		_, err = g.writer.Write(g.buffer.Bytes())
+		w, err = g.writer.Write(g.buffer.Bytes())
+		if err != nil {
+			return w, err
+		}
+
 		g.compress = true
 	}
 
-	return
-
+	return w, err
 }
 
 // Fix: https://github.com/mholt/caddy/issues/38
