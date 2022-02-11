@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type gzipHandler struct {
@@ -61,7 +62,9 @@ func (g *gzipHandler) Handle(c *gin.Context) {
 	if gzWriter.compress {
 		// Just close and flush the gz writer
 		if err := gz.Close(); err != nil {
-			_ = c.Error(fmt.Errorf("closing and flushing gzip writer: %w", err))
+			if err = c.Error(fmt.Errorf("gzip: closing and flushing gzip writer: %w", err)); err != nil {
+				logrus.Error(fmt.Errorf("gzip: attaching gin error: %w", err))
+			}
 		}
 	} else {
 		// Reset to the original writer
@@ -69,7 +72,9 @@ func (g *gzipHandler) Handle(c *gin.Context) {
 
 		// Write the buffered data into the original writer
 		if _, err := gzWriter.ResponseWriter.Write(gzWriter.buffer.Bytes()); err != nil {
-			_ = c.Error(fmt.Errorf("closing and flushing gzip writer: %w", err))
+			if err = c.Error(fmt.Errorf("gzip: writing buffer into original writer: %w", err)); err != nil {
+				logrus.Error(fmt.Errorf("gzip: attaching gin error: %w", err))
+			}
 		}
 	}
 
