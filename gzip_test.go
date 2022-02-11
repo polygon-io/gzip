@@ -253,3 +253,45 @@ func TestDecompressGzipWithIncorrectData(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
+
+func TestGzipMinLengthBuffer(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/minlengthbuffer", nil)
+	req.Header.Add("Accept-Encoding", "gzip")
+
+	w := httptest.NewRecorder()
+	r := newServer(len(testResponse) + 1)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, w.Code, 200)
+	assert.Equal(t, w.Header().Get("Content-Encoding"), "gzip")
+	assert.Equal(t, w.Header().Get("Vary"), "Accept-Encoding")
+	assert.NotEqual(t, w.Header().Get("Content-Length"), "0")
+	assert.NotEqual(t, w.Body.Len(), 2*len(testResponse))
+	assert.Equal(t, fmt.Sprint(w.Body.Len()), w.Header().Get("Content-Length"))
+
+	gr, err := gzip.NewReader(w.Body)
+	assert.NoError(t, err)
+	defer gr.Close()
+
+	body, _ := ioutil.ReadAll(gr)
+	assert.Equal(t, string(body), testResponse+testResponse)
+}
+
+func TestGzipMinLengthNoBuffer(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/", nil)
+	req.Header.Add("Accept-Encoding", "gzip")
+
+	w := httptest.NewRecorder()
+	r := newServer(100)
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, w.Code, 200)
+	assert.NotEqual(t, w.Header().Get("Content-Encoding"), "gzip")
+	assert.NotEqual(t, w.Header().Get("Vary"), "Accept-Encoding")
+	assert.NotEqual(t, w.Header().Get("Content-Length"), "0")
+	assert.Equal(t, w.Body.Len(), len(testResponse))
+	assert.Equal(t, fmt.Sprint(w.Body.Len()), w.Header().Get("Content-Length"))
+
+	body, _ := ioutil.ReadAll(w.Body)
+	assert.Equal(t, string(body), testResponse)
+}

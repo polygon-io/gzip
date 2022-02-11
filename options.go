@@ -23,7 +23,7 @@ type Options struct {
 	ExcludedPaths        ExcludedPaths
 	ExcludedPathesRegexs ExcludedPathesRegexs
 	DecompressFn         func(c *gin.Context)
-	MinLength            uint64
+	MinLength            int
 }
 
 type Option func(*Options)
@@ -52,7 +52,7 @@ func WithDecompressFn(decompressFn func(c *gin.Context)) Option {
 	}
 }
 
-func WithMinLength(minLength uint64) Option {
+func WithMinLength(minLength int) Option {
 	return func(o *Options) {
 		o.MinLength = minLength
 	}
