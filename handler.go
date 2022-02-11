@@ -59,11 +59,12 @@ func (g *gzipHandler) Handle(c *gin.Context) {
 
 	c.Next()
 
+	// nolint:nestif // Complex because lots of error handling.
 	if gzWriter.compress {
 		// Just close and flush the gz writer
 		if err := gz.Close(); err != nil {
-			if err = c.Error(fmt.Errorf("gzip: closing and flushing gzip writer: %w", err)); err != nil {
-				logrus.Error(fmt.Errorf("gzip: attaching gin error: %w", err))
+			if cErr := c.Error(fmt.Errorf("gzip: closing and flushing gzip writer: %w", err)); cErr != nil {
+				logrus.Error(fmt.Errorf("gzip: attaching gin error: %w", cErr))
 			}
 		}
 	} else {
@@ -72,8 +73,8 @@ func (g *gzipHandler) Handle(c *gin.Context) {
 
 		// Write the buffered data into the original writer
 		if _, err := gzWriter.ResponseWriter.Write(gzWriter.buffer.Bytes()); err != nil {
-			if err = c.Error(fmt.Errorf("gzip: writing buffer into original writer: %w", err)); err != nil {
-				logrus.Error(fmt.Errorf("gzip: attaching gin error: %w", err))
+			if cErr := c.Error(fmt.Errorf("gzip: writing buffer into original writer: %w", err)); cErr != nil {
+				logrus.Error(fmt.Errorf("gzip: attaching gin error: %w", cErr))
 			}
 		}
 	}
