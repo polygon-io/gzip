@@ -1,9 +1,9 @@
 # GZIP gin's middleware
 
-[![Run Tests](https://github.com/gin-contrib/gzip/actions/workflows/go.yml/badge.svg)](https://github.com/gin-contrib/gzip/actions/workflows/go.yml)
-[![codecov](https://codecov.io/gh/gin-contrib/gzip/branch/master/graph/badge.svg)](https://codecov.io/gh/gin-contrib/gzip)
-[![Go Report Card](https://goreportcard.com/badge/github.com/gin-contrib/gzip)](https://goreportcard.com/report/github.com/gin-contrib/gzip)
-[![GoDoc](https://godoc.org/github.com/gin-contrib/gzip?status.svg)](https://godoc.org/github.com/gin-contrib/gzip)
+[![Run Tests](https://github.com/polygon-io/gzip/actions/workflows/go.yml/badge.svg)](https://github.com/polygon-io/gzip/actions/workflows/go.yml)
+[![codecov](https://codecov.io/gh/polygon-io/gzip/branch/master/graph/badge.svg)](https://codecov.io/gh/polygon-io/gzip)
+[![Go Report Card](https://goreportcard.com/badge/github.com/polygon-io/gzip)](https://goreportcard.com/report/github.com/polygon-io/gzip)
+[![GoDoc](https://godoc.org/github.com/polygon-io/gzip?status.svg)](https://godoc.org/github.com/polygon-io/gzip)
 [![Join the chat at https://gitter.im/gin-gonic/gin](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/gin-gonic/gin)
 
 Gin middleware to enable `GZIP` support.
@@ -13,13 +13,13 @@ Gin middleware to enable `GZIP` support.
 Download and install it:
 
 ```sh
-go get github.com/gin-contrib/gzip
+go get github.com/polygon-io/gzip
 ```
 
 Import it in your code:
 
 ```go
-import "github.com/gin-contrib/gzip"
+import "github.com/polygon-io/gzip"
 ```
 
 Canonical example:
@@ -32,7 +32,7 @@ import (
   "net/http"
   "time"
 
-  "github.com/gin-contrib/gzip"
+  "github.com/polygon-io/gzip"
   "github.com/gin-gonic/gin"
 )
 
@@ -60,7 +60,7 @@ import (
   "net/http"
   "time"
 
-  "github.com/gin-contrib/gzip"
+  "github.com/polygon-io/gzip"
   "github.com/gin-gonic/gin"
 )
 
@@ -88,7 +88,7 @@ import (
   "net/http"
   "time"
 
-  "github.com/gin-contrib/gzip"
+  "github.com/polygon-io/gzip"
   "github.com/gin-gonic/gin"
 )
 
@@ -116,7 +116,7 @@ import (
   "net/http"
   "time"
 
-  "github.com/gin-contrib/gzip"
+  "github.com/polygon-io/gzip"
   "github.com/gin-gonic/gin"
 )
 
