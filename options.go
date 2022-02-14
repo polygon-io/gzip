@@ -9,10 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// nolint:gochecknoglobals // It's okay that these are globals.
 var (
+	// DefaultExcludedExtentions is a list of file extensions to exlude from compression by default.
 	DefaultExcludedExtentions = NewExcludedExtensions([]string{
 		".png", ".gif", ".jpeg", ".jpg",
 	})
+
+	// DefaultOptions represents the options used to configure this middleware.
 	DefaultOptions = &Options{
 		ExcludedExtensions: DefaultExcludedExtentions,
 	}
@@ -23,6 +27,7 @@ type Options struct {
 	ExcludedPaths        ExcludedPaths
 	ExcludedPathesRegexs ExcludedPathesRegexs
 	DecompressFn         func(c *gin.Context)
+	MinLength            int
 }
 
 type Option func(*Options)
@@ -51,7 +56,13 @@ func WithDecompressFn(decompressFn func(c *gin.Context)) Option {
 	}
 }
 
-// Using map for better lookup performance
+func WithMinLength(minLength int) Option {
+	return func(o *Options) {
+		o.MinLength = minLength
+	}
+}
+
+// ExcludedExtensions is a map of file extensions to exclude from compression.
 type ExcludedExtensions map[string]bool
 
 func NewExcludedExtensions(extensions []string) ExcludedExtensions {
@@ -67,6 +78,7 @@ func (e ExcludedExtensions) Contains(target string) bool {
 	return ok
 }
 
+// ExcludedPaths is a list of paths to exclude from compression.
 type ExcludedPaths []string
 
 func NewExcludedPaths(paths []string) ExcludedPaths {
@@ -82,6 +94,7 @@ func (e ExcludedPaths) Contains(requestURI string) bool {
 	return false
 }
 
+// ExcludedPathesRegexs is a list of regular expressions which match paths to exclude from compression.
 type ExcludedPathesRegexs []*regexp.Regexp
 
 func NewExcludedPathesRegexs(regexs []string) ExcludedPathesRegexs {

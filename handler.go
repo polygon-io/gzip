@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type gzipHandler struct {
@@ -47,17 +48,39 @@ func (g *gzipHandler) Handle(c *gin.Context) {
 
 	gz := g.gzPool.Get().(*gzip.Writer)
 	defer g.gzPool.Put(gz)
-	defer gz.Reset(ioutil.Discard)
 	gz.Reset(c.Writer)
 
-	c.Header("Content-Encoding", "gzip")
-	c.Header("Vary", "Accept-Encoding")
-	c.Writer = &gzipWriter{c.Writer, gz}
-	defer func() {
-		gz.Close()
-		c.Header("Content-Length", fmt.Sprint(c.Writer.Size()))
-	}()
+	gzWriter := &gzipWriter{
+		ResponseWriter: c.Writer,
+		writer:         gz,
+		minLength:      g.Options.MinLength,
+	}
+	c.Writer = gzWriter
+
 	c.Next()
+
+	// nolint:nestif // Complex because lots of error handling.
+	if gzWriter.compress {
+		// Just close and flush the gz writer
+		if err := gz.Close(); err != nil {
+			if cErr := c.Error(fmt.Errorf("gzip: closing and flushing gzip writer: %w", err)); cErr != nil {
+				logrus.Error(fmt.Errorf("gzip: attaching gin error: %w", cErr))
+			}
+		}
+	} else {
+		// Reset to the original writer
+		gz.Reset(ioutil.Discard)
+
+		// Write the buffered data into the original writer
+		if _, err := gzWriter.ResponseWriter.Write(gzWriter.buffer.Bytes()); err != nil {
+			if cErr := c.Error(fmt.Errorf("gzip: writing buffer into original writer: %w", err)); cErr != nil {
+				logrus.Error(fmt.Errorf("gzip: attaching gin error: %w", cErr))
+			}
+		}
+	}
+
+	// Set the content length if it's still possible
+	c.Header("Content-Length", fmt.Sprint(c.Writer.Size()))
 }
 
 func (g *gzipHandler) shouldCompress(req *http.Request) bool {
